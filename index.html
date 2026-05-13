@@ -387,7 +387,19 @@ textarea.form-control{resize:vertical;min-height:80px;}
   <div class="page-header"><div><h1>Data Warga</h1><p>Data kepala keluarga RT.002</p></div><button class="btn btn-primary pengurus-only" onclick="openModalWarga()">+ Tambah Warga</button></div>
   <div id="warga-readonly-banner" class="readonly-banner" style="display:none">👁️ Login sebagai <strong>Warga</strong> — nomor HP ditampilkan tersembunyi</div>
   <div class="card" style="margin-bottom:16px;"><div class="card-body" style="padding:12px 16px;"><div class="search-wrap"><span class="search-icon">🔍</span><input type="text" class="form-control" id="search-warga" placeholder="Cari nama warga..." oninput="renderWarga()"></div></div></div>
-  <div class="card"><div class="table-wrap"><table><thead><tr><th>No.</th><th>Nama KK</th><th>Blok/No</th><th>No. HP</th><th>Jiwa</th><th class="pengurus-only">Aksi</th></tr></thead><tbody id="tabel-warga"></tbody></table></div></div>
+  <div class="card">
+    <div class="card-header">
+      <h3 id="warga-count-label">👥 Semua Anggota</h3>
+      <div class="filter-chips">
+        <span class="chip active" onclick="filterWarga('semua',this)">Semua</span>
+        <span class="chip" onclick="filterWarga('Kepala Keluarga',this)">👨 Kepala Keluarga</span>
+        <span class="chip" onclick="filterWarga('Istri',this)">👩 Istri</span>
+        <span class="chip" onclick="filterWarga('Anak',this)">🧒 Anak</span>
+        <span class="chip" onclick="filterWarga('lainnya',this)">👤 Lainnya</span>
+      </div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>No.</th><th>Nama Lengkap</th><th>Status Keluarga</th><th>JK</th><th>Blok/No</th><th>No. HP</th><th>Tgl Lahir</th><th class="pengurus-only">Aksi</th></tr></thead><tbody id="tabel-warga"></tbody></table></div>
+  </div>
 </div>
 
 <!-- PENGUMUMAN -->
@@ -433,9 +445,37 @@ textarea.form-control{resize:vertical;min-height:80px;}
 <div class="modal-overlay" id="modal-warga">
   <div class="modal"><div class="modal-header"><h3 id="modal-warga-title">Tambah Warga</h3><button class="modal-close" onclick="closeModal('modal-warga')">✕</button></div>
     <input type="hidden" id="warga-edit-id">
-    <div class="grid-2" style="margin-bottom:0"><div class="form-group"><label class="form-label">Nama KK *</label><input type="text" class="form-control" id="w-nama" placeholder="Nama lengkap"></div><div class="form-group"><label class="form-label">Blok / No. Rumah *</label><input type="text" class="form-control" id="w-norumah" placeholder="cth: BP4 / 30"></div></div>
-    <div class="grid-2" style="margin-bottom:0"><div class="form-group"><label class="form-label">No. HP / WA</label><input type="text" class="form-control" id="w-hp" placeholder="08xx-xxxx-xxxx"></div><div class="form-group"><label class="form-label">Jumlah Jiwa</label><input type="number" class="form-control" id="w-jiwa" placeholder="cth: 4" min="1"></div></div>
-    <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-control" id="w-catatan"></textarea></div>
+    <div class="grid-2" style="margin-bottom:0">
+      <div class="form-group"><label class="form-label">Nama Lengkap *</label><input type="text" class="form-control" id="w-nama" placeholder="Nama lengkap"></div>
+      <div class="form-group"><label class="form-label">Blok / No. Rumah *</label><input type="text" class="form-control" id="w-norumah" placeholder="cth: BP4 / 30"></div>
+    </div>
+    <div class="grid-2" style="margin-bottom:0">
+      <div class="form-group">
+        <label class="form-label">Status dalam Keluarga *</label>
+        <select class="form-control" id="w-status">
+          <option value="Kepala Keluarga">👨 Kepala Keluarga</option>
+          <option value="Istri">👩 Istri</option>
+          <option value="Anak">🧒 Anak</option>
+          <option value="Kakek">👴 Kakek</option>
+          <option value="Nenek">👵 Nenek</option>
+          <option value="Menantu">🤝 Menantu</option>
+          <option value="Cucu">👶 Cucu</option>
+          <option value="Keponakan">👦 Keponakan</option>
+          <option value="Lainnya">👤 Lainnya</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">No. HP / WA</label><input type="text" class="form-control" id="w-hp" placeholder="08xx-xxxx-xxxx"></div>
+    </div>
+    <div class="grid-2" style="margin-bottom:0">
+      <div class="form-group"><label class="form-label">Jenis Kelamin</label>
+        <select class="form-control" id="w-jk">
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Tanggal Lahir</label><input type="date" class="form-control" id="w-tgl-lahir"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-control" id="w-catatan" placeholder="Catatan tambahan (opsional)"></textarea></div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-warga')">Batal</button><button class="btn btn-primary" id="btn-simpan-warga" onclick="simpanWarga()">💾 Simpan</button></div>
   </div>
 </div>
@@ -674,15 +714,17 @@ function showPage(id){
 function updateBeranda(){
   document.getElementById('beranda-tanggal').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const bln=bulanIni(),total=cache.warga.length;
-  const lunas=cache.iuran.filter(i=>i.bulan===bln&&i.status==='lunas').length;
+  const wargaKK=cache.warga.filter(w=>(w.status||'Kepala Keluarga')==='Kepala Keluarga');
+  const lunas=cache.iuran.filter(i=>i.bulan===bln&&i.status==='lunas'&&wargaKK.some(w=>w.id===i.warga_id)).length;
   document.getElementById('stat-kk').textContent=total;
-  if(isPengurus())document.getElementById('stat-lunas').textContent=lunas;
+  if(isPengurus())document.getElementById('stat-lunas').textContent=lunas+'/'+wargaKK.length+' KK';
   document.getElementById('stat-agenda').textContent=cache.agenda.filter(a=>a.tgl&&a.tgl.startsWith(bln)).length;
   if(isPengurus()){
-    const pct=total>0?Math.round(lunas/total*100):0;
+    const totalKK=wargaKK.length;
+    const pct=totalKK>0?Math.round(lunas/totalKK*100):0;
     document.getElementById('iuran-progress-bar').style.width=pct+'%';
     document.getElementById('iuran-progress-pct').textContent=pct+'%';
-    document.getElementById('iuran-progress-text').textContent=lunas+' dari '+total+' KK sudah lunas';
+    document.getElementById('iuran-progress-text').textContent=lunas+' dari '+totalKK+' Kepala Keluarga sudah lunas';
     document.getElementById('iuran-terkumpul').textContent=fmtRp(lunas*60000);
   }
   document.getElementById('beranda-pengumuman').innerHTML=cache.pengumuman.length===0
@@ -704,12 +746,31 @@ function renderPengurus(){
   document.getElementById('pengurus-grid').innerHTML=rest.map(p=>{const s=jabStyle(p.jabatan);return`<div class="pengurus-card"><div class="avatar-lg" style="background:${s.bg};color:${s.col}">${initials(p.nama)}</div><div class="pengurus-info"><h4>${p.nama}</h4><span class="jabatan-badge" style="background:${s.bg};color:${s.col}">${s.em} ${p.jabatan}</span><div class="blok-info">📍 ${p.blok} No. ${p.no}</div></div></div>`;}).join('');}
 
 // WARGA
+const STATUS_ICON={'Kepala Keluarga':'👨','Istri':'👩','Anak':'🧒','Kakek':'👴','Nenek':'👵','Menantu':'🤝','Cucu':'👶','Keponakan':'👦','Lainnya':'👤'};
+const STATUS_COLOR={'Kepala Keluarga':'#1e40af','Istri':'#be185d','Anak':'#15803d','Kakek':'#92400e','Nenek':'#6b21a8','Menantu':'#0369a1','Cucu':'#166534','Keponakan':'#9a3412','Lainnya':'#374151'};
+const STATUS_BG={'Kepala Keluarga':'#dbeafe','Istri':'#fce7f3','Anak':'#dcfce7','Kakek':'#fef3c7','Nenek':'#f3e8ff','Menantu':'#e0f2fe','Cucu':'#dcfce7','Keponakan':'#ffedd5','Lainnya':'#f3f4f6'};
+
 function openModalWarga(id){
   if(!isPengurus()){toast('Akses ditolak',true);return;}
   document.getElementById('modal-warga-title').textContent=id?'Edit Data Warga':'Tambah Warga';
-  ['w-nama','w-norumah','w-hp','w-jiwa','w-catatan'].forEach(f=>document.getElementById(f).value='');
+  ['w-nama','w-norumah','w-hp','w-catatan'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('w-status').value='Kepala Keluarga';
+  document.getElementById('w-jk').value='Laki-laki';
+  document.getElementById('w-tgl-lahir').value='';
   document.getElementById('warga-edit-id').value='';
-  if(id){const w=cache.warga.find(x=>x.id===id);if(w){document.getElementById('warga-edit-id').value=w.id;document.getElementById('w-nama').value=w.nama;document.getElementById('w-norumah').value=w.norumah;document.getElementById('w-hp').value=w.hp||'';document.getElementById('w-jiwa').value=w.jiwa||'';document.getElementById('w-catatan').value=w.catatan||'';}}
+  if(id){
+    const w=cache.warga.find(x=>x.id===id);
+    if(w){
+      document.getElementById('warga-edit-id').value=w.id;
+      document.getElementById('w-nama').value=w.nama;
+      document.getElementById('w-norumah').value=w.norumah;
+      document.getElementById('w-hp').value=w.hp||'';
+      document.getElementById('w-status').value=w.status||'Kepala Keluarga';
+      document.getElementById('w-jk').value=w.jk||'Laki-laki';
+      document.getElementById('w-tgl-lahir').value=w.tgl_lahir||'';
+      document.getElementById('w-catatan').value=w.catatan||'';
+    }
+  }
   openModal('modal-warga');
 }
 async function simpanWarga(){
@@ -717,7 +778,14 @@ async function simpanWarga(){
   const nama=document.getElementById('w-nama').value.trim(),norumah=document.getElementById('w-norumah').value.trim();
   if(!nama||!norumah){toast('Nama dan Blok/No wajib diisi!',true);return;}
   const btn=document.getElementById('btn-simpan-warga');btn.disabled=true;btn.textContent='⏳...';
-  const data={nama,norumah,hp:document.getElementById('w-hp').value,jiwa:parseInt(document.getElementById('w-jiwa').value)||null,catatan:document.getElementById('w-catatan').value};
+  const data={
+    nama,norumah,
+    status:document.getElementById('w-status').value,
+    hp:document.getElementById('w-hp').value,
+    jk:document.getElementById('w-jk').value,
+    tgl_lahir:document.getElementById('w-tgl-lahir').value||null,
+    catatan:document.getElementById('w-catatan').value
+  };
   const editId=document.getElementById('warga-edit-id').value;
   try{
     if(editId){const{error}=await sb.from('warga').update(data).eq('id',editId);if(error)throw error;toast('✅ Data warga diperbarui!');}
@@ -733,13 +801,29 @@ async function hapusWarga(id){
 }
 function renderWarga(){
   const q=(document.getElementById('search-warga')?.value||'').toLowerCase();
-  const data=cache.warga.filter(w=>w.nama.toLowerCase().includes(q)||w.norumah.toLowerCase().includes(q));
+  const data=cache.warga.filter(w=>w.nama.toLowerCase().includes(q)||w.norumah.toLowerCase().includes(q)||(w.status||'').toLowerCase().includes(q));
   const tbody=document.getElementById('tabel-warga');
-  if(data.length===0){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><p>Belum ada data warga</p></div></td></tr>';return;}
+  if(data.length===0){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👥</div><p>Belum ada data warga</p></div></td></tr>';return;}
   tbody.innerHTML=data.map((w,i)=>{
     const hp=isPengurus()?w.hp||'-':maskHP(w.hp);
+    const st=w.status||'Lainnya';
+    const stIcon=STATUS_ICON[st]||'👤';
+    const stCol=STATUS_COLOR[st]||'#374151';
+    const stBg=STATUS_BG[st]||'#f3f4f6';
+    const isKK=st==='Kepala Keluarga';
     const aksi=isPengurus()?`<td><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="openModalWarga('${w.id}')">✏️</button><button class="btn btn-danger btn-sm" onclick="hapusWarga('${w.id}')">🗑️</button></div></td>`:'';
-    return `<tr><td>${i+1}</td><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar ${avCol(i)}">${initials(w.nama)}</div><div><div style="font-weight:600;color:var(--biru1)">${w.nama}</div>${w.catatan?'<div style="font-size:11px;color:var(--abu)">'+w.catatan+'</div>':''}</div></div></td><td><strong>${w.norumah}</strong></td><td style="font-family:monospace;font-size:12px">${hp}</td><td>${w.jiwa||'-'} jiwa</td>${aksi}</tr>`;
+    return `<tr style="${isKK?'background:#fafeff;':''}">
+      <td>${i+1}</td>
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar ${avCol(i)}">${initials(w.nama)}</div>
+        <div><div style="font-weight:600;color:var(--biru1)">${w.nama}</div>${w.catatan?'<div style="font-size:11px;color:var(--abu)">'+w.catatan+'</div>':''}</div>
+      </div></td>
+      <td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${stBg};color:${stCol}">${stIcon} ${st}</span></td>
+      <td><strong>${w.norumah}</strong></td>
+      <td style="font-family:monospace;font-size:12px">${hp}</td>
+      <td><span style="font-size:12px;color:var(--abu)">${w.jk||'-'}</span></td>
+      ${aksi}
+    </tr>`;
   }).join('');
 }
 
@@ -781,33 +865,68 @@ async function hapusBayar(){
 }
 function renderIuran(){
   if(!isPengurus())return;
-  const bln=bulanIni(),total=cache.warga.length;
-  const lunas=cache.iuran.filter(i=>i.bulan===bln&&i.status==='lunas').length;
-  document.getElementById('ik-total').textContent=total;
+  // Filter HANYA kepala keluarga untuk iuran
+  const kkWarga=cache.warga.filter(w=>(w.status||'Kepala Keluarga')==='Kepala Keluarga');
+  const bln=bulanIni();
+  const totalKK=kkWarga.length;
+  const lunas=cache.iuran.filter(i=>i.bulan===bln&&i.status==='lunas'&&kkWarga.some(w=>w.id===i.warga_id)).length;
+  document.getElementById('ik-total').textContent=totalKK;
   document.getElementById('ik-lunas').textContent=lunas;
-  document.getElementById('ik-belum').textContent=total-lunas;
+  document.getElementById('ik-belum').textContent=totalKK-lunas;
   document.getElementById('ik-terkumpul').textContent=fmtRp(lunas*60000);
-  if(total===0){document.getElementById('tabel-iuran').innerHTML='<tr><td><div class="empty-state"><div class="empty-icon">👥</div><p>Tambah data warga terlebih dahulu</p></div></td></tr>';return;}
-  let thead=`<thead><tr><th class="nama-th">Nama</th><th class="alamat-th">Blok/No</th>`;
-  BULAN.forEach((b,i)=>{const bKey=`${tahunIuran}-${String(i+1).padStart(2,'0')}`;const isNow=bKey===bulanIni();thead+=`<th class="bulan-col" style="${isNow?'background:var(--biru-muda);color:var(--biru1)':''}">${b.slice(0,3)}</th>`;});
-  thead+='<th style="text-align:center">Total</th></tr></thead>';
+  if(totalKK===0){
+    document.getElementById('tabel-iuran').innerHTML='<tr><td colspan="15"><div class="empty-state"><div class="empty-icon">\u{1F3E0}</div><p>Belum ada data Kepala Keluarga. Tambah warga dengan status \'Kepala Keluarga\' terlebih dahulu.</p></div></td></tr>';
+    return;
+  }
+  let thead=`<thead><tr><th class="nama-th">Kepala Keluarga</th><th class="alamat-th">Blok/No</th>`;
+  BULAN.forEach((b,i)=>{
+    const bKey=`${tahunIuran}-${String(i+1).padStart(2,'0')}`;
+    const isNow=bKey===bulanIni();
+    thead+=`<th class="bulan-col" style="${isNow?'background:var(--biru-muda);color:var(--biru1);font-weight:700':''}">`;
+    thead+=b.slice(0,3)+'</th>';
+  });
+  thead+='<th style="text-align:center;min-width:60px">Lunas</th></tr></thead>';
   let tbody='<tbody>';
-  cache.warga.forEach((w,wi)=>{
+  kkWarga.forEach((w,wi)=>{
     let ct=0;
-    let row=`<tr><td class="nama-cell"><div style="display:flex;align-items:center;gap:8px"><div class="avatar ${avCol(wi)}" style="width:28px;height:28px;font-size:10px">${initials(w.nama)}</div><span style="font-weight:600;color:var(--biru1)">${w.nama}</span></div></td><td class="alamat-cell">${w.norumah}</td>`;
+    let row=`<tr>
+      <td class="nama-cell">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="avatar ${avCol(wi)}" style="width:28px;height:28px;font-size:10px">${initials(w.nama)}</div>
+          <div>
+            <span style="font-weight:600;color:var(--biru1)">${w.nama}</span>
+          </div>
+        </div>
+      </td>
+      <td class="alamat-cell">${w.norumah}</td>`;
     BULAN.forEach((b,bi)=>{
       const bKey=`${tahunIuran}-${String(bi+1).padStart(2,'0')}`;
       const rec=cache.iuran.find(i=>i.warga_id===w.id&&i.bulan===bKey);
       const isNow=bKey===bulanIni();
-      if(rec&&rec.status==='lunas'){ct++;row+=`<td class="bulan-cell" style="${isNow?'background:#f0fdf4':''}"><button class="bayar-btn bayar-lunas" onclick="openModalBayar('${w.id}',${bi})">✓</button><span class="tgl-bayar">${fmtTglShort(rec.tgl_bayar)}</span></td>`;}
-      else{row+=`<td class="bulan-cell" style="${isNow?'background:#eff6ff':''}"><button class="bayar-btn bayar-belum" onclick="openModalBayar('${w.id}',${bi})">—</button></td>`;}
+      if(rec&&rec.status==='lunas'){
+        ct++;
+        row+=`<td class="bulan-cell" style="${isNow?'background:#f0fdf4':''}">
+          <button class="bayar-btn bayar-lunas" onclick="openModalBayar('${w.id}',${bi})" title="${fmtTglShort(rec.tgl_bayar)||'Lunas'}">\u2713</button>
+          <span class="tgl-bayar">${fmtTglShort(rec.tgl_bayar)}</span>
+        </td>`;
+      } else {
+        row+=`<td class="bulan-cell" style="${isNow?'background:#eff6ff':''}">
+          <button class="bayar-btn bayar-belum" onclick="openModalBayar('${w.id}',${bi})">\u2014</button>
+        </td>`;
+      }
     });
-    row+=`<td style="text-align:center"><span style="font-size:12px;font-weight:700;color:${ct===12?'var(--hijau)':ct>0?'var(--aksen)':'var(--merah)'}">${ct}/12</span></td></tr>`;
+    const pct=Math.round(ct/12*100);
+    const barCol=ct===12?'var(--hijau)':ct>6?'var(--aksen)':'var(--merah)';
+    row+=`<td style="text-align:center;padding:8px 12px;">
+      <span style="font-size:13px;font-weight:700;color:${barCol}">${ct}/12</span>
+      <div style="height:4px;background:#e2e8f0;border-radius:99px;margin-top:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${barCol};border-radius:99px;transition:width .3s"></div>
+      </div>
+    </td></tr>`;
     tbody+=row;
   });
   document.getElementById('tabel-iuran').innerHTML=thead+tbody+'</tbody>';
 }
-
 // PENGUMUMAN
 function openModalPengumuman(){if(!isPengurus()){toast('Akses ditolak',true);return;}['p-judul','p-isi'].forEach(f=>document.getElementById(f).value='');document.getElementById('p-tgl').value=new Date().toISOString().slice(0,10);document.getElementById('p-prioritas').value='normal';openModal('modal-pengumuman');}
 async function simpanPengumuman(){if(!isPengurus()){toast('Akses ditolak',true);return;}const judul=document.getElementById('p-judul').value.trim(),isi=document.getElementById('p-isi').value.trim();if(!judul||!isi){toast('Judul dan isi wajib diisi!',true);return;}const btn=document.getElementById('btn-simpan-pengumuman');btn.disabled=true;btn.textContent='⏳...';try{const{error}=await sb.from('pengumuman').insert({id:uid(),judul,isi,tgl:document.getElementById('p-tgl').value,prioritas:document.getElementById('p-prioritas').value});if(error)throw error;await loadAll();closeModal('modal-pengumuman');renderPengumuman();updateBeranda();toast('✅ Pengumuman ditambahkan!');}catch(e){toast('❌ '+e.message,true);}btn.disabled=false;btn.textContent='💾 Simpan';}
