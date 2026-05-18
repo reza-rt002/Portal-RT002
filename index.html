@@ -276,22 +276,6 @@ textarea.form-control{resize:vertical;min-height:80px;}
   .iuran-summary{grid-template-columns:1fr;}
   .stats-grid{grid-template-columns:1fr 1fr;}
 }
-
-/* ═══ LAPORAN KAS ═══ */
-.kas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;padding:16px;}
-.kas-item{border-radius:12px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:all .2s;background:var(--putih);}
-.kas-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
-.kas-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;}
-.kas-thumb-ph{width:100%;aspect-ratio:4/3;background:var(--biru-terang);display:flex;align-items:center;justify-content:center;font-size:36px;}
-.kas-caption{padding:8px 12px;font-size:12px;font-weight:600;color:var(--biru1);}
-.kas-date{font-size:11px;color:var(--abu);padding:0 12px 10px;}
-.kas-add-box{border-radius:12px;border:2px dashed var(--biru4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--biru3);font-size:12px;gap:8px;transition:all .15s;background:var(--biru-terang);min-height:150px;padding:20px;}
-.kas-add-box:hover{border-color:var(--biru2);color:var(--biru2);background:var(--biru-muda);}
-#kas-lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px;}
-#kas-lightbox.open{display:flex;}
-#kas-lightbox-img{max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain;}
-#kas-lb-close{position:fixed;top:16px;right:20px;background:rgba(255,255,255,0.15);color:#fff;border:none;width:38px;height:38px;border-radius:50%;font-size:22px;cursor:pointer;}
-#kas-lb-cap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -389,16 +373,6 @@ textarea.form-control{resize:vertical;min-height:80px;}
       <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--abu);"><span>Terkumpul: <strong id="iuran-terkumpul" style="color:var(--hijau)">Rp 0</strong></span><span>Nominal: <strong>Rp 60.000 / KK</strong></span></div>
     </div>
   </div>
-
-  <!-- LAPORAN KAS -->
-  <div class="card" style="margin-top:16px">
-    <div class="card-header">
-      <h3>📊 Laporan Keuangan Kas RT</h3>
-      <button class="btn btn-primary btn-sm pengurus-only" onclick="openModal('modal-kas')">+ Upload Laporan</button>
-    </div>
-    <div id="kas-grid"></div>
-  </div>
-
 </div>
 
 <!-- PENGURUS -->
@@ -424,7 +398,7 @@ textarea.form-control{resize:vertical;min-height:80px;}
         <span class="chip" onclick="filterWarga('lainnya',this)">👤 Lainnya</span>
       </div>
     </div>
-    <div class="table-wrap"><table><thead><tr><th>No.</th><th>Nama Lengkap</th><th>Status Keluarga</th><th>JK</th><th>Agama</th><th>Blok/No</th><th>No. HP</th><th class="pengurus-only">Aksi</th></tr></thead><tbody id="tabel-warga"></tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>No.</th><th>Nama Lengkap</th><th>Status Keluarga</th><th>JK</th><th>Blok/No</th><th>No. HP</th><th>Tgl Lahir</th><th class="pengurus-only">Aksi</th></tr></thead><tbody id="tabel-warga"></tbody></table></div>
   </div>
 </div>
 
@@ -495,20 +469,11 @@ textarea.form-control{resize:vertical;min-height:80px;}
     <div class="grid-2" style="margin-bottom:0">
       <div class="form-group"><label class="form-label">Jenis Kelamin</label>
         <select class="form-control" id="w-jk">
-          <option value="Laki-laki">&#9794; Laki-laki</option>
-          <option value="Perempuan">&#9792; Perempuan</option>
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Agama</label>
-        <select class="form-control" id="w-agama">
-          <option value="Islam">Islam</option>
-          <option value="Kristen">Kristen</option>
-          <option value="Katolik">Katolik</option>
-          <option value="Hindu">Hindu</option>
-          <option value="Buddha">Buddha</option>
-          <option value="Konghucu">Konghucu</option>
-        </select>
-      </div>
+      <div class="form-group"><label class="form-label">Tanggal Lahir</label><input type="date" class="form-control" id="w-tgl-lahir"></div>
     </div>
     <div class="form-group"><label class="form-label">Catatan</label><textarea class="form-control" id="w-catatan" placeholder="Catatan tambahan (opsional)"></textarea></div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-warga')">Batal</button><button class="btn btn-primary" id="btn-simpan-warga" onclick="simpanWarga()">💾 Simpan</button></div>
@@ -556,33 +521,6 @@ textarea.form-control{resize:vertical;min-height:80px;}
   </div>
 </div>
 
-
-<!-- LIGHTBOX KAS -->
-<div id="kas-lightbox">
-  <button id="kas-lb-close" onclick="closeLightbox()">&#x2715;</button>
-  <img id="kas-lightbox-img" src="" alt="">
-  <div id="kas-lb-cap"></div>
-</div>
-
-<!-- MODAL KAS -->
-<div class="modal-overlay" id="modal-kas">
-  <div class="modal" style="width:420px">
-    <div class="modal-header"><h3>&#x1F4CA; Upload Laporan Kas</h3><button class="modal-close" onclick="closeModal('modal-kas')">&#x2715;</button></div>
-    <div class="form-group"><label class="form-label">Judul Laporan *</label><input type="text" class="form-control" id="kas-judul" placeholder="cth: Laporan Kas Mei 2025"></div>
-    <div class="form-group"><label class="form-label">Periode</label><input type="month" class="form-control" id="kas-periode"></div>
-    <div class="form-group">
-      <label class="form-label">Gambar Laporan *</label>
-      <div id="kas-preview-wrap" style="display:none;margin-bottom:8px"><img id="kas-preview-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover"></div>
-      <input type="file" id="kas-file" accept="image/*" style="display:none" onchange="previewKas(event)">
-      <button class="btn btn-secondary" style="width:100%" onclick="document.getElementById('kas-file').click()">&#x1F4F7; Pilih Gambar (maks 1.5MB)</button>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-kas')">Batal</button>
-      <button class="btn btn-primary" id="btn-simpan-kas" onclick="simpanKas()">&#x1F4BE; Upload</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -591,7 +529,7 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
 const USERS={
-  pengurus_rt002:{password:'admin_rt002!',role:'pengurus',label:'Pengurus RT',bg:'rgba(255,255,255,0.2)',col:'#fff'},
+  reza:{password:'reza',role:'pengurus',label:'Pengurus RT',bg:'rgba(255,255,255,0.2)',col:'#fff'},
   warga_rt002:{password:'penghuni_rt002',role:'warga',label:'Warga',bg:'rgba(255,255,255,0.15)',col:'rgba(255,255,255,0.8)'}
 };
 
@@ -719,7 +657,6 @@ function showLoadingAndInit(){
   setTimeout(async()=>{
     await loadAll();
     await loadVisitor();
-    await loadKas();
     ls.style.display='none';
     document.getElementById('db-status').style.display='flex';
     document.getElementById('sidebar').style.display='flex';
@@ -769,7 +706,7 @@ function showPage(id){
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
   closeSidebar();
-  const acts={beranda:()=>loadAll().then(updateBeranda).then(loadKas),pengurus:renderPengurus,warga:()=>loadAll().then(renderWarga),pengumuman:()=>loadAll().then(renderPengumuman),galeri:renderGaleri,iuran:()=>loadAll().then(renderIuran),agenda:()=>loadAll().then(renderAgenda)};
+  const acts={beranda:()=>loadAll().then(updateBeranda),pengurus:renderPengurus,warga:()=>loadAll().then(renderWarga),pengumuman:()=>loadAll().then(renderPengumuman),galeri:renderGaleri,iuran:()=>loadAll().then(renderIuran),agenda:()=>loadAll().then(renderAgenda)};
   if(acts[id])acts[id]();
 }
 
@@ -819,7 +756,7 @@ function openModalWarga(id){
   ['w-nama','w-norumah','w-hp','w-catatan'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('w-status').value='Kepala Keluarga';
   document.getElementById('w-jk').value='Laki-laki';
-  document.getElementById('w-agama').value='Islam';
+  document.getElementById('w-tgl-lahir').value='';
   document.getElementById('warga-edit-id').value='';
   if(id){
     const w=cache.warga.find(x=>x.id===id);
@@ -830,7 +767,7 @@ function openModalWarga(id){
       document.getElementById('w-hp').value=w.hp||'';
       document.getElementById('w-status').value=w.status||'Kepala Keluarga';
       document.getElementById('w-jk').value=w.jk||'Laki-laki';
-      document.getElementById('w-agama').value=w.agama||'Islam';
+      document.getElementById('w-tgl-lahir').value=w.tgl_lahir||'';
       document.getElementById('w-catatan').value=w.catatan||'';
     }
   }
@@ -846,7 +783,7 @@ async function simpanWarga(){
     status:document.getElementById('w-status').value,
     hp:document.getElementById('w-hp').value,
     jk:document.getElementById('w-jk').value,
-    agama:document.getElementById('w-agama').value,
+    tgl_lahir:document.getElementById('w-tgl-lahir').value||null,
     catatan:document.getElementById('w-catatan').value
   };
   const editId=document.getElementById('warga-edit-id').value;
@@ -862,59 +799,31 @@ async function hapusWarga(id){
   try{const{error}=await sb.from('warga').delete().eq('id',id);if(error)throw error;await loadAll();renderWarga();updateBeranda();toast('🗑️ Data warga dihapus');}
   catch(e){toast('❌ '+e.message,true);}
 }
-let wargaFilter='semua';
-function filterWarga(mode,el){
-  wargaFilter=mode;
-  document.querySelectorAll('#page-warga .filter-chips .chip').forEach(function(c){c.classList.remove('active');});
-  el.classList.add('active');
-  renderWarga();
-}
 function renderWarga(){
   const q=(document.getElementById('search-warga')?.value||'').toLowerCase();
-  let data=cache.warga.filter(w=>
-    w.nama.toLowerCase().includes(q)||
-    (w.norumah||'').toLowerCase().includes(q)||
-    (w.status||'').toLowerCase().includes(q)
-  );
-  if(wargaFilter!=='semua'){
-    if(wargaFilter==='lainnya'){
-      data=data.filter(w=>!['Kepala Keluarga','Istri','Anak'].includes(w.status||''));
-    } else {
-      data=data.filter(w=>(w.status||'')===wargaFilter);
-    }
-  }
-  const lbl=document.getElementById('warga-count-label');
-  const lblMap={'semua':'Semua Anggota','Kepala Keluarga':'Kepala Keluarga','Istri':'Istri','Anak':'Anak','lainnya':'Lainnya'};
-  if(lbl) lbl.innerHTML='&#x1F465; '+(lblMap[wargaFilter]||wargaFilter)+' <span style="font-weight:400;color:var(--abu);font-size:13px">('+data.length+' orang)</span>';
+  const data=cache.warga.filter(w=>w.nama.toLowerCase().includes(q)||w.norumah.toLowerCase().includes(q)||(w.status||'').toLowerCase().includes(q));
   const tbody=document.getElementById('tabel-warga');
-  if(data.length===0){
-    tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">&#x1F465;</div><p>Tidak ada data</p></div></td></tr>';
-    return;
-  }
-  tbody.innerHTML=data.map(function(w,i){
+  if(data.length===0){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👥</div><p>Belum ada data warga</p></div></td></tr>';return;}
+  tbody.innerHTML=data.map((w,i)=>{
     const hp=isPengurus()?w.hp||'-':maskHP(w.hp);
     const st=w.status||'Lainnya';
-    const stIcon=STATUS_ICON[st]||'&#x1F464;';
+    const stIcon=STATUS_ICON[st]||'👤';
     const stCol=STATUS_COLOR[st]||'#374151';
     const stBg=STATUS_BG[st]||'#f3f4f6';
     const isKK=st==='Kepala Keluarga';
-    const agama=w.agama||'-';
-    const jk=w.jk||'-';
-    const aksi=isPengurus()?'<td><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="openModalWarga(''+w.id+'')">&#9999;&#65039;</button><button class="btn btn-danger btn-sm" onclick="hapusWarga(''+w.id+'')">&#128465;&#65039;</button></div></td>':'';
-    const rowStyle=isKK?'background:#f0f7ff;border-left:3px solid var(--biru3);':'';
-    return '<tr style="'+rowStyle+'">'
-      +'<td style="font-weight:'+(isKK?'700':'400')+'">'+(i+1)+'</td>'
-      +'<td><div style="display:flex;align-items:center;gap:10px">'
-        +'<div class="avatar '+avCol(i)+'">'+initials(w.nama)+'</div>'
-        +'<div><div style="font-weight:600;color:var(--biru1)">'+w.nama+'</div>'+(w.catatan?'<div style="font-size:11px;color:var(--abu)">'+w.catatan+'</div>':'')+'</div>'
-      +'</div></td>'
-      +'<td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:'+stBg+';color:'+stCol+'">'+stIcon+' '+st+'</span></td>'
-      +'<td><span style="font-size:12px">'+jk+'</span></td>'
-      +'<td><span style="font-size:12px;color:var(--abu)">'+agama+'</span></td>'
-      +'<td><strong>'+w.norumah+'</strong></td>'
-      +'<td style="font-family:monospace;font-size:12px">'+hp+'</td>'
-      +aksi
-      +'</tr>';
+    const aksi=isPengurus()?`<td><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="openModalWarga('${w.id}')">✏️</button><button class="btn btn-danger btn-sm" onclick="hapusWarga('${w.id}')">🗑️</button></div></td>`:'';
+    return `<tr style="${isKK?'background:#fafeff;':''}">
+      <td>${i+1}</td>
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar ${avCol(i)}">${initials(w.nama)}</div>
+        <div><div style="font-weight:600;color:var(--biru1)">${w.nama}</div>${w.catatan?'<div style="font-size:11px;color:var(--abu)">'+w.catatan+'</div>':''}</div>
+      </div></td>
+      <td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${stBg};color:${stCol}">${stIcon} ${st}</span></td>
+      <td><strong>${w.norumah}</strong></td>
+      <td style="font-family:monospace;font-size:12px">${hp}</td>
+      <td><span style="font-size:12px;color:var(--abu)">${w.jk||'-'}</span></td>
+      ${aksi}
+    </tr>`;
   }).join('');
 }
 
@@ -956,11 +865,8 @@ async function hapusBayar(){
 }
 function renderIuran(){
   if(!isPengurus())return;
-  // KK = status 'Kepala Keluarga' ATAU kosong/null (data lama)
-  const kkWarga=cache.warga.filter(w=>{
-    const st=(w.status||'').trim();
-    return st===''||st==='Kepala Keluarga';
-  });
+  // Filter HANYA kepala keluarga untuk iuran
+  const kkWarga=cache.warga.filter(w=>(w.status||'Kepala Keluarga')==='Kepala Keluarga');
   const bln=bulanIni();
   const totalKK=kkWarga.length;
   const lunas=cache.iuran.filter(i=>i.bulan===bln&&i.status==='lunas'&&kkWarga.some(w=>w.id===i.warga_id)).length;
@@ -983,15 +889,12 @@ function renderIuran(){
   let tbody='<tbody>';
   kkWarga.forEach((w,wi)=>{
     let ct=0;
-    const recBln=cache.iuran.find(i=>i.warga_id===w.id&&i.bulan===bln&&i.status==='lunas');
-    const belumBln=!recBln;
-    let row=`<tr style="border-left:3px solid ${belumBln?'var(--merah)':'var(--hijau)'}">
-      <td class="nama-cell" style="background:${belumBln?'#fff8f8':'#f8fff8'}">
+    let row=`<tr>
+      <td class="nama-cell">
         <div style="display:flex;align-items:center;gap:8px">
           <div class="avatar ${avCol(wi)}" style="width:28px;height:28px;font-size:10px">${initials(w.nama)}</div>
           <div>
             <span style="font-weight:600;color:var(--biru1)">${w.nama}</span>
-            <div style="font-size:10px;font-weight:600;color:${belumBln?'var(--merah)':'var(--hijau)'}">${belumBln?'&#9888; Belum bayar bulan ini':'&#10003; Lunas bulan ini'}</div>
           </div>
         </div>
       </td>
@@ -1007,8 +910,8 @@ function renderIuran(){
           <span class="tgl-bayar">${fmtTglShort(rec.tgl_bayar)}</span>
         </td>`;
       } else {
-        row+=`<td class="bulan-cell" style="${isNow?'background:#fff1f1':''}">
-          <button class="bayar-btn bayar-belum" onclick="openModalBayar('${w.id}',${bi})" style="${isNow?'border-color:var(--merah);color:var(--merah);':''}">&#8212;</button>
+        row+=`<td class="bulan-cell" style="${isNow?'background:#eff6ff':''}">
+          <button class="bayar-btn bayar-belum" onclick="openModalBayar('${w.id}',${bi})">\u2014</button>
         </td>`;
       }
     });
@@ -1044,100 +947,6 @@ async function hapusAgenda(id){if(!isPengurus()||!confirm('Hapus agenda ini?'))r
 function renderAgenda(){const el=document.getElementById('list-agenda');if(cache.agenda.length===0){el.innerHTML='<div class="empty-state"><div class="empty-icon">📅</div><p>Belum ada agenda</p></div>';return;}const today=new Date().toISOString().slice(0,10);el.innerHTML=cache.agenda.map(a=>{const{h,b}=fmtBH(a.tgl);const lewat=a.tgl<today;return`<div class="agenda-item" style="${lewat?'opacity:0.5':''}"><div class="agenda-date-box"><div class="hari">${h}</div><div class="bln-box">${b}</div></div><div style="flex:1"><div style="font-weight:700;font-size:14px;color:var(--biru1)">${a.nama} ${lewat?'<span class="badge badge-info" style="font-size:10px">Selesai</span>':''}</div><div style="font-size:12px;color:var(--abu);margin-top:3px">📍 ${a.lokasi||'-'} · 🕐 ${a.waktu||'-'}</div>${a.ket?'<div style="font-size:12px;margin-top:4px">'+a.ket+'</div>':''}</div>${isPengurus()?`<button class="btn btn-danger btn-sm" onclick="hapusAgenda('${a.id}')">🗑️</button>`:''}</div>`;}).join('');}
 
 window.addEventListener('resize',()=>{const hb=document.getElementById('hamburger-btn');if(currentUser&&hb)hb.style.display=window.innerWidth<=768?'flex':'none';});
-
-
-// ═══ LAPORAN KAS ═══
-let kasCache=[];
-let kasImgData=null;
-
-async function loadKas(){
-  try{
-    const{data,error}=await sb.from('kas_laporan').select('*').order('created_at',{ascending:false});
-    if(error) throw error;
-    kasCache=data||[];
-    renderKas(kasCache);
-  }catch(e){ renderKas([]); }
-}
-
-function renderKas(list){
-  const grid=document.getElementById('kas-grid');
-  if(!grid) return;
-  if(list.length===0){
-    grid.innerHTML=isPengurus()
-      ?'<div style="padding:16px"><div class="kas-add-box" onclick="openModal('modal-kas')"><span style="font-size:36px">&#x1F4CA;</span><span style="font-size:13px;font-weight:600">Upload Laporan Kas Pertama</span><span style="font-size:12px;color:var(--abu)">Klik untuk upload</span></div></div>'
-      :'<div class="empty-state"><div class="empty-icon">&#x1F4C2;</div><p>Belum ada laporan kas</p></div>';
-    return;
-  }
-  grid.innerHTML='<div class="kas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;padding:16px">'
-    +list.map(function(k){
-      return '<div class="kas-item" onclick="openLightbox(''+k.id+')">'
-        +(k.img_data?'<img class="kas-thumb" src="'+k.img_data+'" alt="'+k.judul+'">':'<div class="kas-thumb-ph">&#x1F4CA;</div>')
-        +'<div class="kas-caption">'+k.judul+'</div>'
-        +'<div class="kas-date">'+(k.periode||'')+' &nbsp;&#183;&nbsp; '+fmtTgl((k.created_at||'').slice(0,10))+'</div>'
-        +(isPengurus()?'<div style="padding:0 12px 10px"><button class="btn btn-danger btn-sm" style="width:100%;font-size:11px" onclick="event.stopPropagation();hapusKas(''+k.id+'')">&#x1F5D1; Hapus</button></div>':'')
-        +'</div>';
-    }).join('')+'</div>';
-}
-
-function openLightbox(id){
-  const k=kasCache.find(function(x){return x.id===id;});
-  if(!k||!k.img_data) return;
-  document.getElementById('kas-lightbox-img').src=k.img_data;
-  document.getElementById('kas-lb-cap').textContent=k.judul+(k.periode?' · '+k.periode:'');
-  document.getElementById('kas-lightbox').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-function closeLightbox(){
-  document.getElementById('kas-lightbox').classList.remove('open');
-  document.body.style.overflow='';
-}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
-
-function previewKas(e){
-  const file=e.target.files[0];
-  if(!file) return;
-  if(file.size>1500000){toast('Gambar terlalu besar! Maks 1.5MB',true);return;}
-  const reader=new FileReader();
-  reader.onload=function(ev){
-    kasImgData=ev.target.result;
-    document.getElementById('kas-preview-img').src=kasImgData;
-    document.getElementById('kas-preview-wrap').style.display='block';
-  };
-  reader.readAsDataURL(file);
-}
-
-async function simpanKas(){
-  if(!isPengurus()){toast('Akses ditolak',true);return;}
-  const judul=document.getElementById('kas-judul').value.trim();
-  const periode=document.getElementById('kas-periode').value;
-  if(!judul){toast('Judul wajib diisi!',true);return;}
-  if(!kasImgData){toast('Pilih gambar terlebih dahulu!',true);return;}
-  const btn=document.getElementById('btn-simpan-kas');
-  btn.disabled=true;btn.textContent='&#x23F3; Mengupload...';
-  try{
-    const{error}=await sb.from('kas_laporan').insert({id:uid(),judul:judul,periode:periode||null,img_data:kasImgData});
-    if(error) throw error;
-    toast('&#x2705; Laporan berhasil diupload!');
-    closeModal('modal-kas');
-    document.getElementById('kas-judul').value='';
-    document.getElementById('kas-periode').value='';
-    document.getElementById('kas-preview-wrap').style.display='none';
-    document.getElementById('kas-file').value='';
-    kasImgData=null;
-    await loadKas();
-  }catch(e){ toast('&#x274C; Gagal: '+e.message,true); }
-  btn.disabled=false;btn.textContent='&#x1F4BE; Upload';
-}
-
-async function hapusKas(id){
-  if(!isPengurus()||!confirm('Hapus laporan ini?')) return;
-  try{
-    const{error}=await sb.from('kas_laporan').delete().eq('id',id);
-    if(error) throw error;
-    toast('&#x1F5D1; Laporan dihapus');
-    await loadKas();
-  }catch(e){ toast('&#x274C; '+e.message,true); }
-}
 
 // START
 loadVisitor(); // Load visitor count for login page
