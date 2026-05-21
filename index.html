@@ -287,6 +287,26 @@ textarea.form-control{resize:vertical;min-height:80px;}
   .iuran-summary{grid-template-columns:1fr;}
   .stats-grid{grid-template-columns:1fr 1fr;}
 }
+
+/* ═══ VIDEO KEGIATAN ═══ */
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:16px;}
+.video-item{border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--putih);transition:all .2s;box-shadow:var(--shadow);}
+.video-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.video-embed-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;}
+.video-embed-wrap iframe{width:100%;height:100%;border:none;}
+.video-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;cursor:pointer;}
+.video-thumb-ph{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#1a3a6b,#2563eb);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:8px;}
+.video-thumb-ph span{font-size:36px;}
+.video-thumb-ph p{color:rgba(255,255,255,0.8);font-size:12px;}
+.video-play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);cursor:pointer;transition:background .2s;}
+.video-play-overlay:hover{background:rgba(0,0,0,0.1);}
+.video-play-btn{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+.video-info{padding:10px 14px 14px;}
+.video-title{font-size:13px;font-weight:700;color:var(--biru1);margin-bottom:4px;}
+.video-desc{font-size:12px;color:var(--abu);line-height:1.5;}
+.video-date{font-size:11px;color:var(--abu);margin-top:6px;}
+.video-add-box{border-radius:12px;border:2px dashed var(--biru4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--biru3);gap:8px;transition:all .15s;background:var(--biru-terang);min-height:180px;padding:20px;text-align:center;}
+.video-add-box:hover{border-color:var(--biru2);color:var(--biru2);background:var(--biru-muda);}
 </style>
 </head>
 <body>
@@ -385,6 +405,16 @@ textarea.form-control{resize:vertical;min-height:80px;}
       <div id="kas-container">
         <div class="empty-state"><div class="empty-icon">&#x1F4C2;</div><p>Memuat laporan...</p></div>
       </div>
+    </div>
+  </div>
+  <!-- VIDEO KEGIATAN -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <h3>&#x1F3A5; Video Kegiatan RT</h3>
+      <button class="btn btn-primary btn-sm pengurus-only" onclick="openModal('modal-video')">+ Tambah Video</button>
+    </div>
+    <div id="video-container">
+      <div class="empty-state"><div class="empty-icon">&#x1F4F9;</div><p>Memuat video...</p></div>
     </div>
   </div>
   <div class="card pengurus-only"><div class="card-header"><h3>&#x1F4B0; Progress Iuran Bulan Ini</h3></div>
@@ -493,6 +523,39 @@ textarea.form-control{resize:vertical;min-height:80px;}
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-kas')">Batal</button>
       <button class="btn btn-primary" id="btn-simpan-kas" onclick="simpanKas()">&#x1F4BE; Upload</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VIDEO -->
+<div class="modal-overlay" id="modal-video">
+  <div class="modal" style="width:480px">
+    <div class="modal-header"><h3>&#x1F3A5; Tambah Video Kegiatan</h3><button class="modal-close" onclick="closeModal('modal-video')">&#x2715;</button></div>
+    <div class="form-group">
+      <label class="form-label">Judul Video *</label>
+      <input type="text" class="form-control" id="vid-judul" placeholder="cth: Kerja Bakti April 2025">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Link YouTube atau Google Drive *</label>
+      <input type="text" class="form-control" id="vid-url" placeholder="https://youtube.com/watch?v=... atau https://drive.google.com/...">
+      <div style="font-size:11px;color:var(--abu);margin-top:6px">&#x2139;&#xFE0F; Paste link YouTube atau Google Drive. Untuk Drive, pastikan video sudah di-set <strong>Anyone with the link can view</strong>.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Deskripsi</label>
+      <textarea class="form-control" id="vid-desc" placeholder="Ceritakan sedikit tentang kegiatan ini..." style="min-height:80px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tanggal Kegiatan</label>
+      <input type="date" class="form-control" id="vid-tgl">
+    </div>
+    <div id="vid-preview-wrap" style="display:none;margin-top:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--biru1);margin-bottom:6px">Preview:</div>
+      <div class="video-embed-wrap" style="border-radius:10px;overflow:hidden" id="vid-preview-frame"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-video')">Batal</button>
+      <button class="btn btn-secondary" onclick="previewVideo()">&#x1F441;&#xFE0F; Preview</button>
+      <button class="btn btn-primary" id="btn-simpan-video" onclick="simpanVideo()">&#x1F4BE; Simpan</button>
     </div>
   </div>
 </div>
@@ -817,6 +880,7 @@ function showLoadingAndInit(){
     await loadAll();
     await loadVisitor();
     await loadKas();
+    await loadVideo();
     ls.style.display='none';
     document.getElementById('db-status').style.display='flex';
     document.getElementById('sidebar').style.display='flex';
@@ -866,7 +930,7 @@ function showPage(id){
   document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
   closeSidebar();
   const acts={
-    beranda:()=>loadAll().then(updateBeranda).then(loadKas),
+    beranda:()=>loadAll().then(updateBeranda).then(loadKas).then(loadVideo),
     pengurus:renderPengurus,
     warga:()=>loadAll().then(renderWarga),
     pengumuman:()=>loadAll().then(renderPengumuman),
@@ -1241,6 +1305,139 @@ function renderAgenda(){
 }
 
 window.addEventListener('resize',()=>{const hb=document.getElementById('hamburger-btn');if(currentUser&&hb)hb.style.display=window.innerWidth<=768?'flex':'none';});
+
+
+// ═══ VIDEO KEGIATAN ═══
+var videoCache = [];
+
+function parseVideoUrl(url) {
+  if (!url) return null;
+  url = url.trim();
+
+  // YouTube formats
+  var ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+  if (ytMatch) {
+    return { type: 'youtube', id: ytMatch[1], embed: 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0' };
+  }
+
+  // YouTube Shorts
+  var ytShort = url.match(/youtube\.com\/shorts\/([^&\n?#]+)/);
+  if (ytShort) {
+    return { type: 'youtube', id: ytShort[1], embed: 'https://www.youtube.com/embed/' + ytShort[1] + '?rel=0' };
+  }
+
+  // Google Drive
+  var driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  if (driveMatch) {
+    return { type: 'drive', id: driveMatch[1], embed: 'https://drive.google.com/file/d/' + driveMatch[1] + '/preview' };
+  }
+
+  // Google Drive open link
+  var driveOpen = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+  if (driveOpen) {
+    return { type: 'drive', id: driveOpen[1], embed: 'https://drive.google.com/file/d/' + driveOpen[1] + '/preview' };
+  }
+
+  return null;
+}
+
+function previewVideo() {
+  var url = document.getElementById('vid-url').value.trim();
+  var parsed = parseVideoUrl(url);
+  if (!parsed) {
+    toast('Link tidak valid. Gunakan link YouTube atau Google Drive.', true);
+    return;
+  }
+  var wrap = document.getElementById('vid-preview-frame');
+  wrap.innerHTML = '<iframe src="' + parsed.embed + '" allowfullscreen allow="autoplay"></iframe>';
+  document.getElementById('vid-preview-wrap').style.display = 'block';
+  toast('Preview dimuat!');
+}
+
+async function loadVideo() {
+  try {
+    var res = await sb.from('video_kegiatan').select('*').order('created_at', {ascending: false});
+    if (res.error) throw res.error;
+    videoCache = res.data || [];
+    renderVideo(videoCache);
+  } catch(e) {
+    renderVideo([]);
+  }
+}
+
+function renderVideo(list) {
+  var container = document.getElementById('video-container');
+  if (!container) return;
+  if (list.length === 0) {
+    if (isPengurus()) {
+      container.innerHTML = '<div style="padding:16px"><div class="video-add-box" onclick="openModal(\'modal-video\')"><span style="font-size:40px">&#x1F3A5;</span><span style="font-size:13px;font-weight:600;color:var(--biru1)">Tambah Video Kegiatan Pertama</span><span style="font-size:12px;color:var(--abu)">YouTube atau Google Drive</span></div></div>';
+    } else {
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x1F4F9;</div><p>Belum ada video kegiatan</p></div>';
+    }
+    return;
+  }
+  var html = '<div class="video-grid">';
+  list.forEach(function(v) {
+    var parsed = parseVideoUrl(v.url);
+    html += '<div class="video-item">';
+    if (parsed) {
+      html += '<div class="video-embed-wrap">';
+      html += '<iframe src="' + parsed.embed + '" allowfullscreen allow="autoplay; encrypted-media" loading="lazy"></iframe>';
+      html += '</div>';
+    } else {
+      html += '<div class="video-thumb-ph"><span>&#x1F4F9;</span><p>Video tidak tersedia</p></div>';
+    }
+    html += '<div class="video-info">';
+    html += '<div class="video-title">&#x1F3A5; ' + v.judul + '</div>';
+    if (v.desc) { html += '<div class="video-desc">' + v.desc + '</div>'; }
+    html += '<div class="video-date">&#x1F4C5; ' + fmtTgl(v.tgl || (v.created_at||'').slice(0,10)) + '</div>';
+    if (isPengurus()) {
+      html += '<button class="btn btn-danger btn-sm" style="width:100%;margin-top:8px;font-size:11px" data-vid="' + v.id + '" onclick="hapusVideoBtn(this)">&#x1F5D1;&#xFE0F; Hapus</button>';
+    }
+    html += '</div></div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+async function simpanVideo() {
+  if (!isPengurus()) { toast('Akses ditolak', true); return; }
+  var judul = document.getElementById('vid-judul').value.trim();
+  var url   = document.getElementById('vid-url').value.trim();
+  var desc  = document.getElementById('vid-desc').value.trim();
+  var tgl   = document.getElementById('vid-tgl').value;
+  if (!judul) { toast('Judul wajib diisi!', true); return; }
+  if (!url)   { toast('Link video wajib diisi!', true); return; }
+  var parsed = parseVideoUrl(url);
+  if (!parsed) { toast('Link tidak valid. Gunakan link YouTube atau Google Drive.', true); return; }
+  var btn = document.getElementById('btn-simpan-video');
+  btn.disabled = true; btn.textContent = '⏳ Menyimpan...';
+  try {
+    var res = await sb.from('video_kegiatan').insert({ id: uid(), judul: judul, url: url, desc: desc, tgl: tgl || null });
+    if (res.error) throw res.error;
+    toast('✅ Video berhasil ditambahkan!');
+    closeModal('modal-video');
+    document.getElementById('vid-judul').value = '';
+    document.getElementById('vid-url').value = '';
+    document.getElementById('vid-desc').value = '';
+    document.getElementById('vid-tgl').value = '';
+    document.getElementById('vid-preview-wrap').style.display = 'none';
+    document.getElementById('vid-preview-frame').innerHTML = '';
+    await loadVideo();
+  } catch(e) { toast('❌ Gagal: ' + e.message, true); }
+  btn.disabled = false; btn.textContent = '💾 Simpan';
+}
+
+function hapusVideoBtn(btn) { hapusVideo(btn.getAttribute('data-vid')); }
+async function hapusVideo(id) {
+  if (!isPengurus() || !confirm('Hapus video ini?')) return;
+  try {
+    var res = await sb.from('video_kegiatan').delete().eq('id', id);
+    if (res.error) throw res.error;
+    toast('🗑️ Video dihapus');
+    await loadVideo();
+  } catch(e) { toast('❌ ' + e.message, true); }
+}
 
 // ── START ──
 loadVisitor();
