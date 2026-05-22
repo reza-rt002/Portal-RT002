@@ -307,6 +307,37 @@ textarea.form-control{resize:vertical;min-height:80px;}
 .video-date{font-size:11px;color:var(--abu);margin-top:6px;}
 .video-add-box{border-radius:12px;border:2px dashed var(--biru4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--biru3);gap:8px;transition:all .15s;background:var(--biru-terang);min-height:180px;padding:20px;text-align:center;}
 .video-add-box:hover{border-color:var(--biru2);color:var(--biru2);background:var(--biru-muda);}
+
+/* ═══ GALERI DRIVE ═══ */
+.galeri-drive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding:16px;}
+.galeri-drive-item{border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--putih);cursor:pointer;transition:all .2s;position:relative;}
+.galeri-drive-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.galeri-drive-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;}
+.galeri-drive-ph{width:100%;aspect-ratio:4/3;background:var(--grad);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.galeri-drive-ph span{font-size:36px;}
+.galeri-drive-ph p{color:rgba(255,255,255,0.8);font-size:11px;}
+.galeri-drive-caption{padding:8px 12px 12px;font-size:12px;font-weight:600;color:var(--biru1);}
+.galeri-drive-date{font-size:11px;color:var(--abu);padding:0 12px 10px;}
+.galeri-drive-add{border-radius:12px;border:2px dashed var(--biru4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--biru3);gap:8px;background:var(--biru-terang);min-height:160px;transition:all .15s;padding:16px;text-align:center;}
+.galeri-drive-add:hover{border-color:var(--biru2);background:var(--biru-muda);}
+
+/* ═══ LIGHTBOX GALERI ═══ */
+#galeri-lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9001;display:none;flex-direction:column;align-items:center;justify-content:center;}
+#galeri-lightbox.open{display:flex;}
+#galeri-lb-img{max-width:88vw;max-height:80vh;object-fit:contain;border-radius:8px;transition:opacity .25s;}
+#galeri-lb-img.fade{opacity:0;}
+.galeri-lb-top{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(rgba(0,0,0,0.7),transparent);}
+.galeri-lb-counter{color:rgba(255,255,255,0.8);font-size:13px;font-weight:600;}
+.galeri-lb-close{background:rgba(255,255,255,0.15);color:#fff;border:none;width:38px;height:38px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.galeri-lb-close:hover{background:rgba(255,255,255,0.25);}
+.galeri-lb-caption{position:fixed;bottom:0;left:0;right:0;padding:14px 20px;background:linear-gradient(transparent,rgba(0,0,0,0.7));color:#fff;text-align:center;font-size:14px;font-weight:600;}
+.galeri-lb-nav{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);color:#fff;border:none;width:48px;height:48px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.galeri-lb-nav:hover{background:rgba(255,255,255,0.3);}
+#galeri-lb-prev{left:16px;}
+#galeri-lb-next{right:16px;}
+.galeri-lb-dots{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);display:flex;gap:6px;}
+.galeri-lb-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.4);cursor:pointer;transition:all .15s;}
+.galeri-lb-dot.active{background:#fff;width:20px;border-radius:4px;}
 </style>
 </head>
 <body>
@@ -470,9 +501,29 @@ textarea.form-control{resize:vertical;min-height:80px;}
 
 <!-- GALERI -->
 <div id="page-galeri" class="page">
-  <div class="page-header"><div><h1>Galeri Foto</h1><p>Dokumentasi kegiatan lingkungan</p></div><button class="btn btn-primary pengurus-only" onclick="document.getElementById('input-foto').click()">+ Upload Foto</button></div>
-  <input type="file" id="input-foto" accept="image/*" multiple style="display:none" onchange="uploadFoto(event)">
-  <div class="card"><div class="foto-grid" id="foto-grid"></div></div>
+  <div class="page-header">
+    <div><h1>Galeri Foto</h1><p>Dokumentasi kegiatan lingkungan</p></div>
+    <button class="btn btn-primary pengurus-only" onclick="openModal('modal-galeri-add')">+ Tambah Foto</button>
+  </div>
+  <div class="card" id="galeri-drive-card">
+    <div class="card-header"><h3>&#x1F4F7; Album Foto</h3></div>
+    <div id="galeri-drive-container">
+      <div class="empty-state"><div class="empty-icon">&#x1F4F8;</div><p>Memuat foto...</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX GALERI -->
+<div id="galeri-lightbox">
+  <div class="galeri-lb-top">
+    <span class="galeri-lb-counter" id="galeri-lb-counter">1 / 1</span>
+    <button class="galeri-lb-close" onclick="closeGaleriLb()">&#x2715;</button>
+  </div>
+  <button class="galeri-lb-nav" id="galeri-lb-prev" onclick="galeriLbNav(-1)">&#x2039;</button>
+  <img id="galeri-lb-img" src="" alt="">
+  <button class="galeri-lb-nav" id="galeri-lb-next" onclick="galeriLbNav(1)">&#x203A;</button>
+  <div class="galeri-lb-dots" id="galeri-lb-dots"></div>
+  <div class="galeri-lb-caption" id="galeri-lb-caption"></div>
 </div>
 
 <!-- IURAN -->
@@ -556,6 +607,40 @@ textarea.form-control{resize:vertical;min-height:80px;}
       <button class="btn btn-secondary" onclick="closeModal('modal-video')">Batal</button>
       <button class="btn btn-secondary" onclick="previewVideo()">&#x1F441;&#xFE0F; Preview</button>
       <button class="btn btn-primary" id="btn-simpan-video" onclick="simpanVideo()">&#x1F4BE; Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GALERI ADD -->
+<div class="modal-overlay" id="modal-galeri-add">
+  <div class="modal" style="width:460px">
+    <div class="modal-header"><h3>&#x1F4F7; Tambah Foto</h3><button class="modal-close" onclick="closeModal('modal-galeri-add')">&#x2715;</button></div>
+    <div class="form-group">
+      <label class="form-label">Judul / Keterangan *</label>
+      <input type="text" class="form-control" id="gd-judul" placeholder="cth: Kerja Bakti April 2025">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Link Google Drive *</label>
+      <input type="text" class="form-control" id="gd-url" placeholder="https://drive.google.com/file/d/...">
+      <div style="font-size:11px;color:var(--abu);margin-top:6px;line-height:1.6">
+        &#x2139;&#xFE0F; Cara dapat link:<br>
+        1. Upload foto ke Google Drive<br>
+        2. Klik kanan foto &#x2192; <strong>Share</strong> &#x2192; <strong>Anyone with the link</strong><br>
+        3. Copy link dan paste di sini
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tanggal Kegiatan</label>
+      <input type="date" class="form-control" id="gd-tgl">
+    </div>
+    <div id="gd-preview-wrap" style="display:none;margin-top:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--biru1);margin-bottom:6px">Preview:</div>
+      <img id="gd-preview-img" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-galeri-add')">Batal</button>
+      <button class="btn btn-secondary" onclick="previewGaleriDrive()">&#x1F441;&#xFE0F; Preview</button>
+      <button class="btn btn-primary" id="btn-simpan-galeri-drive" onclick="simpanGaleriDrive()">&#x1F4BE; Simpan</button>
     </div>
   </div>
 </div>
@@ -881,6 +966,7 @@ function showLoadingAndInit(){
     await loadVisitor();
     await loadKas();
     await loadVideo();
+    await loadGaleri();
     ls.style.display='none';
     document.getElementById('db-status').style.display='flex';
     document.getElementById('sidebar').style.display='flex';
@@ -934,7 +1020,7 @@ function showPage(id){
     pengurus:renderPengurus,
     warga:()=>loadAll().then(renderWarga),
     pengumuman:()=>loadAll().then(renderPengumuman),
-    galeri:renderGaleri,
+    galeri:()=>loadGaleri(),
     iuran:()=>loadAll().then(renderIuran),
     agenda:()=>loadAll().then(renderAgenda)
   };
@@ -1436,6 +1522,179 @@ async function hapusVideo(id) {
     if (res.error) throw res.error;
     toast('🗑️ Video dihapus');
     await loadVideo();
+  } catch(e) { toast('❌ ' + e.message, true); }
+}
+
+
+// ═══ GALERI DRIVE ═══
+var galeriCache = [];
+var galeriLbIndex = 0;
+
+function parseDriveImgUrl(url) {
+  if (!url) return null;
+  url = url.trim();
+  // file/d/ID/view or open?id=ID
+  var m = url.match(/drive\.google\.com\/file\/d\/([^/\?&]+)/);
+  if (!m) m = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+  if (!m) m = url.match(/id=([^&]+)/);
+  if (m) {
+    return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w800';
+  }
+  // direct image url
+  if (url.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i)) return url;
+  return null;
+}
+
+function previewGaleriDrive() {
+  var url = document.getElementById('gd-url').value.trim();
+  var imgUrl = parseDriveImgUrl(url);
+  if (!imgUrl) { toast('Link tidak valid. Gunakan link Google Drive.', true); return; }
+  var img = document.getElementById('gd-preview-img');
+  img.src = imgUrl;
+  img.onerror = function() { toast('Gagal load preview. Pastikan sharing sudah diset ke Anyone with link.', true); };
+  img.onload = function() { toast('Preview berhasil!'); };
+  document.getElementById('gd-preview-wrap').style.display = 'block';
+}
+
+async function loadGaleri() {
+  try {
+    var res = await sb.from('galeri_foto').select('*').order('created_at', {ascending: false});
+    if (res.error) throw res.error;
+    galeriCache = res.data || [];
+    renderGaleriDrive(galeriCache);
+  } catch(e) {
+    renderGaleriDrive([]);
+  }
+}
+
+function renderGaleriDrive(list) {
+  var container = document.getElementById('galeri-drive-container');
+  if (!container) return;
+  if (list.length === 0) {
+    if (isPengurus()) {
+      container.innerHTML = '<div style="padding:16px"><div class="galeri-drive-add" onclick="openModal(\'modal-galeri-add\')"><span style="font-size:40px">&#x1F4F7;</span><span style="font-size:13px;font-weight:600;color:var(--biru1)">Tambah Foto Pertama</span><span style="font-size:12px;color:var(--abu)">Link Google Drive</span></div></div>';
+    } else {
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x1F4F8;</div><p>Belum ada foto</p></div>';
+    }
+    return;
+  }
+  var html = '<div class="galeri-drive-grid">';
+  list.forEach(function(f, idx) {
+    var imgUrl = parseDriveImgUrl(f.url);
+    html += '<div class="galeri-drive-item" data-idx="' + idx + '" onclick="openGaleriLb(' + idx + ')">';
+    if (imgUrl) {
+      html += '<img class="galeri-drive-thumb" src="' + imgUrl + '" alt="' + f.judul + '" loading="lazy" onerror="this.parentElement.querySelector(\'.galeri-drive-ph\') && (this.style.display=\'none\')">';
+    } else {
+      html += '<div class="galeri-drive-ph"><span>&#x1F4F7;</span><p>Tap untuk lihat</p></div>';
+    }
+    html += '<div class="galeri-drive-caption">' + f.judul + '</div>';
+    if (f.tgl) { html += '<div class="galeri-drive-date">&#x1F4C5; ' + fmtTgl(f.tgl) + '</div>'; }
+    if (isPengurus()) {
+      html += '<div style="padding:0 12px 10px"><button class="btn btn-danger btn-sm" style="width:100%;font-size:11px" data-fid="' + f.id + '" onclick="event.stopPropagation();hapusGaleriBtn(this)">&#x1F5D1;&#xFE0F; Hapus</button></div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function openGaleriLb(idx) {
+  if (galeriCache.length === 0) return;
+  galeriLbIndex = idx;
+  updateGaleriLb();
+  document.getElementById('galeri-lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeGaleriLb() {
+  document.getElementById('galeri-lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function updateGaleriLb() {
+  var f = galeriCache[galeriLbIndex];
+  if (!f) return;
+  var imgUrl = parseDriveImgUrl(f.url) || '';
+  var img = document.getElementById('galeri-lb-img');
+  img.classList.add('fade');
+  setTimeout(function() {
+    img.src = imgUrl;
+    img.classList.remove('fade');
+  }, 200);
+  document.getElementById('galeri-lb-caption').textContent = f.judul + (f.tgl ? '  ·  ' + fmtTgl(f.tgl) : '');
+  document.getElementById('galeri-lb-counter').textContent = (galeriLbIndex + 1) + ' / ' + galeriCache.length;
+  // dots
+  var dots = '';
+  galeriCache.forEach(function(_, i) {
+    dots += '<div class="galeri-lb-dot' + (i === galeriLbIndex ? ' active' : '') + '" onclick="galeriLbGoTo(' + i + ')"></div>';
+  });
+  document.getElementById('galeri-lb-dots').innerHTML = dots;
+  // hide nav if only 1
+  document.getElementById('galeri-lb-prev').style.display = galeriCache.length > 1 ? 'flex' : 'none';
+  document.getElementById('galeri-lb-next').style.display = galeriCache.length > 1 ? 'flex' : 'none';
+}
+
+function galeriLbNav(dir) {
+  galeriLbIndex = (galeriLbIndex + dir + galeriCache.length) % galeriCache.length;
+  updateGaleriLb();
+}
+
+function galeriLbGoTo(idx) {
+  galeriLbIndex = idx;
+  updateGaleriLb();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (!document.getElementById('galeri-lightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft')  galeriLbNav(-1);
+  if (e.key === 'ArrowRight') galeriLbNav(1);
+  if (e.key === 'Escape')     closeGaleriLb();
+});
+
+// Swipe support
+(function() {
+  var startX = 0;
+  var lb = document.getElementById('galeri-lightbox');
+  if (!lb) return;
+  lb.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, {passive: true});
+  lb.addEventListener('touchend', function(e) {
+    var diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) galeriLbNav(diff > 0 ? 1 : -1);
+  }, {passive: true});
+})();
+
+async function simpanGaleriDrive() {
+  if (!isPengurus()) { toast('Akses ditolak', true); return; }
+  var judul = document.getElementById('gd-judul').value.trim();
+  var url   = document.getElementById('gd-url').value.trim();
+  var tgl   = document.getElementById('gd-tgl').value;
+  if (!judul) { toast('Judul wajib diisi!', true); return; }
+  if (!url)   { toast('Link Google Drive wajib diisi!', true); return; }
+  var btn = document.getElementById('btn-simpan-galeri-drive');
+  btn.disabled = true; btn.textContent = '⏳...';
+  try {
+    var res = await sb.from('galeri_foto').insert({ id: uid(), judul: judul, url: url, tgl: tgl || null });
+    if (res.error) throw res.error;
+    toast('✅ Foto berhasil ditambahkan!');
+    closeModal('modal-galeri-add');
+    document.getElementById('gd-judul').value = '';
+    document.getElementById('gd-url').value = '';
+    document.getElementById('gd-tgl').value = '';
+    document.getElementById('gd-preview-wrap').style.display = 'none';
+    await loadGaleri();
+  } catch(e) { toast('❌ Gagal: ' + e.message, true); }
+  btn.disabled = false; btn.textContent = '💾 Simpan';
+}
+
+function hapusGaleriBtn(btn) { hapusGaleri(btn.getAttribute('data-fid')); }
+async function hapusGaleri(id) {
+  if (!isPengurus() || !confirm('Hapus foto ini?')) return;
+  try {
+    var res = await sb.from('galeri_foto').delete().eq('id', id);
+    if (res.error) throw res.error;
+    toast('🗑️ Foto dihapus');
+    await loadGaleri();
   } catch(e) { toast('❌ ' + e.message, true); }
 }
 
